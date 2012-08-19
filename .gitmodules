@@ -1,0 +1,3 @@
+[submodule "docutils-html5-writer"]
+	path = docutils-html5-writer
+	url = https://github.com/eegg/docutils-html5-writer.git
