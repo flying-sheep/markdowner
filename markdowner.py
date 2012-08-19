@@ -69,7 +69,7 @@ class Renderer(QThread):
 	def run(self):
 		"""Causes the markdowner to rerender"""
 		self.scrollpos = self.widget.preview.page().mainFrame().scrollPosition()
-		source = unicode(self.w.editor.document().text())
+		source = unicode(self.widget.editor.document().text())
 		html = self.widget.format.converter(source)
 		self.html = u"<html><body>{}</body></html>".format(html)
 
@@ -152,7 +152,7 @@ class Markdowner(KParts.MainWindow):
 		"""
 		self.kate.writeConfig(self.autoSaveConfigGroup().config())
 		
-		if self.editor.isModified():
+		if self.editor.document().isModified():
 			#TODO localization
 			ret = KMessageBox.warningYesNoCancel(self, "Save changes to document?")
 			if ret == KMessageBox.Yes:
