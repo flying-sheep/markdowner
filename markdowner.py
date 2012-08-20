@@ -52,6 +52,7 @@ class Format(object):
 		return self.extensions
 
 FMTLIST = (
+	Format("Dummy", lambda source: "<pre>{}</pre>".format(source), u""),
 	Format("Markdown", mdconverter,
 		"md", "mdwn", "mdown", "markdown", "txt", "text", "mdtext"),
 	Format("reStructuredText", rstconverter,
