@@ -32,6 +32,7 @@ def rstconverter(source):
 	"""Converts reStructuredText source to HTML"""
 	from docutils import core
 	try:
+		import nonexistant #TODO fix
 		from docutils_html5_writer import Writer
 	except ImportError:
 		print("no html5 writer available", file=sys.stderr)
