@@ -5,7 +5,7 @@
 A program to edit Markdown and reStructuredText documents with previews
 """
 
-from __future__ import division, print_function
+from __future__ import division, print_function, unicode_literals
 
 import sys, os, re
 from contextlib import contextmanager
@@ -53,7 +53,7 @@ class Format(object):
 		return self.extensions
 
 FMTLIST = (
-	Format("Dummy", lambda source: "<pre>{}</pre>".format(source), u""),
+	Format("Dummy", lambda source: "<pre>{}</pre>".format(source), ""),
 	Format("Markdown", mdconverter,
 		"md", "mdwn", "mdown", "markdown", "txt", "text", "mdtext"),
 	Format("reStructuredText", rstconverter,
@@ -67,13 +67,13 @@ class Renderer(QThread):
 		QThread.__init__(self)
 		self.widget = widget
 		self.scrollpos = None
-		self.html = u""
+		self.html = ""
 	def run(self):
 		"""Causes the markdowner to rerender"""
 		self.scrollpos = self.widget.preview.page().mainFrame().scrollPosition()
 		source = unicode(self.widget.editor.document().text())
 		html = self.widget.format.converter(source)
-		self.html = u"<html><body>{}</body></html>".format(html)
+		self.html = "<html><body>{}</body></html>".format(html)
 
 class Markdowner(KParts.MainWindow):
 	"""Main Editor window"""
@@ -180,7 +180,7 @@ class Markdowner(KParts.MainWindow):
 	@pyqtSlot(KTextEditor.Document)
 	def refresh_document(self, doc):
 		"""Sets the necessary bits if a new document is loaded"""
-		self.setWindowTitle(u"{} – {}".format(
+		self.setWindowTitle("{} – {}".format(
 			doc.documentName(),
 			KCmdLineArgs.aboutData().programName()
 		))
@@ -228,19 +228,19 @@ def main():
 	about_data = KAboutData(
 		"markdowner",
 		"",
-		ki18n("Markdowner"),
+		ki18n(b"Markdowner"),
 		"1.0",
-		ki18n("Markdown editor"),
+		ki18n(b"Markdown editor"),
 		KAboutData.License_GPL,
-		ki18n("© 2011 flying sheep"),
-		ki18n("none"),
+		ki18n(b"© 2011 flying sheep"),
+		ki18n(b"none"),
 		"http://red-sheep.de",
 		"flying-sheep@web.de"
 	)
 	
 	KCmdLineArgs.init(sys.argv, about_data)
 	opts = KCmdLineOptions()
-	opts.add("+[file]", ki18n("File to open"))
+	opts.add("+[file]", ki18n(b"File to open"))
 	KCmdLineArgs.addCmdLineOptions(opts)
 	
 	args = KCmdLineArgs.parsedArgs()
