@@ -220,8 +220,9 @@ def base64css():
 	generates a base64 encoded version of a file
 	suited for HTML src attributes.
 	"""
+	cssbytes = CSS_TEMPLATE.format(colors=COLORS).encode('utf-8')
 	uri = "data:text/css;charset=utf-8;base64,"
-	uri += b64encode(CSS_TEMPLATE.format(colors=COLORS).encode('utf-8')).decode('utf-8')#.replace("\n","")
+	uri += b64encode(cssbytes).decode('utf-8')
 	return QUrl(uri)
 
 def main():
