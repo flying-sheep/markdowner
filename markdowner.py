@@ -8,6 +8,7 @@ A program to edit Markdown and reStructuredText documents with previews
 from __future__ import division, print_function, unicode_literals
 
 import sys, os, re
+from base64 import b64encode
 from contextlib import contextmanager
 
 from PyKDE4.kdecore     import KUrl, KAboutData, ki18n, \
@@ -71,7 +72,7 @@ class Renderer(QThread):
 	def run(self):
 		"""Causes the markdowner to rerender"""
 		self.scrollpos = self.widget.preview.page().mainFrame().scrollPosition()
-		source = unicode(self.widget.editor.document().text())
+		source = str(self.widget.editor.document().text())
 		html = self.widget.format.converter(source)
 		self.html = "<html><body>{}</body></html>".format(html)
 
@@ -143,7 +144,7 @@ class Markdowner(KParts.MainWindow):
 	@property
 	def format(self):
 		"""Gets the format from the corrent document’s file extension"""
-		path = unicode(self.editor.document().url().path())
+		path = str(self.editor.document().url().path())
 		ext = path[path.rfind(".")+1:]
 		return FORMATS[ext]
 	
@@ -172,7 +173,7 @@ class Markdowner(KParts.MainWindow):
 			self.preview.page().currentFrame().scrollToAnchor(url.fragment())
 		elif url.isRelative() and self.queryExit():
 			#TODO: less hacky, extensions
-			url = KUrl(str(self.editor.document().url().path()) + str(url.path()))
+			url = KUrl(self.editor.document().url().path() + url.path())
 			self.editor.document().openUrl(url)
 		else:
 			QDesktopServices.openUrl(url)
@@ -220,7 +221,7 @@ def base64css():
 	suited for HTML src attributes.
 	"""
 	uri = "data:text/css;charset=utf-8;base64,"
-	uri += CSS_TEMPLATE.format(colors=COLORS).encode("base64").replace("\n","")
+	uri += b64encode(CSS_TEMPLATE.format(colors=COLORS).encode('utf-8')).decode('utf-8')#.replace("\n","")
 	return QUrl(uri)
 
 def main():
@@ -232,7 +233,7 @@ def main():
 		"1.0",
 		ki18n(b"Markdown editor"),
 		KAboutData.License_GPL,
-		ki18n(b"© 2011 flying sheep"),
+		ki18n("© 2011 flying sheep".encode('utf-8')),
 		ki18n(b"none"),
 		"http://red-sheep.de",
 		"flying-sheep@web.de"
