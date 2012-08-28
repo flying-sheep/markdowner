@@ -18,7 +18,8 @@ from PyKDE4.kparts      import KParts
 from PyKDE4.ktexteditor import KTextEditor
 
 from PyQt4.QtCore   import Qt, QUrl, QThread, pyqtSlot
-from PyQt4.QtGui    import QDesktopServices, QDockWidget, QPalette
+from PyQt4.QtGui    import QWidget, QDesktopServices, QDockWidget, QPalette, \
+                           QSizeGrip, QScrollBar
 from PyQt4.QtWebKit import QWebSettings, QWebView, QWebPage, QWebInspector
 QWebSettings.globalSettings().setAttribute(
 	QWebSettings.DeveloperExtrasEnabled, True)
@@ -87,6 +88,9 @@ class Markdowner(KParts.MainWindow):
 		self.editor = self.kate.createDocument(self).createView(self)
 		doc = self.editor.document()
 		self.editor.setContextMenu(self.editor.defaultContextMenu())
+		
+		sizegrip = create_grip(self.editor)
+		sizegrip.show() #TODO: only show on windowstate change
 		
 		self.renderer = Renderer(self)
 		
@@ -197,6 +201,29 @@ class Markdowner(KParts.MainWindow):
 		
 		self.addDockWidget(area, dock)
 		dock.setWidget(widget)
+
+def create_grip(editor):
+	"""
+	Hack that extracts the dummy widget
+	in the corner of the editor scrollbars
+	and overlays it with a QSizeGrip
+	"""
+	for child in editor.children():
+		if issubclass(type(child), QScrollBar):
+			w_dummy = min(child.width(), child.height())
+			break
+	
+	for child in editor.children():
+		if (issubclass(type(child), QWidget)
+			and child.width() == w_dummy
+			and child.height() == w_dummy):
+			dummy = child
+			break
+	#dummy = editor.m_viewInternal.m_dummy
+	
+	sizegrip = QSizeGrip(dummy)
+	sizegrip.resize(w_dummy, w_dummy)
+	return sizegrip
 
 SCRIPTDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 with open(os.path.join(SCRIPTDIR, "html.css")) as css_file:
