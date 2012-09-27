@@ -25,6 +25,8 @@ from PyKDE4.kdeui       import KColorScheme, KIcon, KMessageBox
 from PyKDE4.kparts      import KParts
 from PyKDE4.ktexteditor import KTextEditor
 
+from .formats import FORMATS
+
 ABOUT = KAboutData(
 	'markdowner',
 	'',
@@ -36,45 +38,6 @@ ABOUT = KAboutData(
 	ki18n(b'none'),
 	'http://red-sheep.de',
 	'flying-sheep@web.de')
-
-def mdconverter(source):
-	"""Converts Markdown source to HTML"""
-	# http://www.freewisdom.org/projects/python-markdown/
-	from markdown import markdown
-	return markdown(source, ['extra', 'codehilite'])
-
-def rstconverter(source):
-	"""Converts reStructuredText source to HTML"""
-	from docutils import core
-	try:
-		raise ImportError('not implemented') #TODO fix
-		from docutils_html5_writer import Writer
-	except ImportError:
-		print('no html5 writer available', file=sys.stderr)
-		from docutils.writers.html4css1 import Writer
-	parts = core.publish_parts(source=source, writer=Writer())
-	return parts['whole']
-
-class Format(object):
-	"""
-	Holds a format supported by markdowner.
-	Formats have names, a bunch of file extensions, and associated converters
-	"""
-	def __init__(self, name, converter, *extensions):
-		self.name = name
-		self.converter = converter
-		self.extensions = extensions
-	def __iter__(self):
-		return self.extensions
-
-FMTLIST = (
-	Format('Dummy', '<pre>{}</pre>'.format, ''),
-	Format('Markdown', mdconverter,
-		'md', 'mdwn', 'mdown', 'markdown', 'txt', 'text', 'mdtext'),
-	Format('reStructuredText', rstconverter,
-		'rst', 'rest')
-)
-FORMATS = {ext: fmt for fmt in FMTLIST for ext in fmt.extensions}
 
 class Renderer(QThread):
 	"""Thread which can reconvert the markup document"""
