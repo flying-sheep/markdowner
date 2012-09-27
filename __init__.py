@@ -20,7 +20,7 @@ from PyQt4.QtWebKit import QWebSettings, QWebView, QWebPage, QWebInspector
 QWebSettings.globalSettings().setAttribute(
 	QWebSettings.DeveloperExtrasEnabled, True)
 
-from PyKDE4.kdecore     import KAboutData, KUrl, ki18n
+from PyKDE4.kdecore     import KAboutData, KUrl, ki18n, i18n
 from PyKDE4.kdeui       import KColorScheme, KIcon, KMessageBox
 from PyKDE4.kparts      import KParts
 from PyKDE4.ktexteditor import KTextEditor
@@ -136,8 +136,8 @@ class Markdowner(KParts.MainWindow):
 		self.kate.writeConfig(self.autoSaveConfigGroup().config())
 		
 		if self.editor.document().isModified():
-			#TODO localization
-			ret = KMessageBox.warningYesNoCancel(self, 'Save changes to document?')
+			ret = KMessageBox.warningYesNoCancel(self,
+				i18n(b'Save changes to document?'))
 			if ret == KMessageBox.Yes:
 				return self.editor.document().documentSave()
 			else:
