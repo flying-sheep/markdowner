@@ -11,13 +11,18 @@ import sys, os, re
 from base64 import b64encode
 from contextlib import contextmanager
 
-from PyKDE4.kdecore     import KUrl, KAboutData, ki18n, \
-                               KCmdLineOptions, KCmdLineArgs
+import sip
+sip.setapi('QString', 2)
+sip.setapi('QVariant', 2)
+
+from PyKDE4.kdecore     import (
+	KUrl, KAboutData, ki18n,
+	KCmdLineOptions, KCmdLineArgs)
 from PyKDE4.kdeui       import KApplication, KColorScheme, KIcon, KMessageBox
 from PyKDE4.kparts      import KParts
 from PyKDE4.ktexteditor import KTextEditor
 
-from PyQt4.QtCore   import Qt, QUrl, QThread, pyqtSlot
+from PyQt4.QtCore   import Qt, QUrl, QThread, pyqtSlot as Slot
 from PyQt4.QtGui    import QWidget, QDesktopServices, QDockWidget, QPalette, \
                            QSizeGrip, QScrollBar
 from PyQt4.QtWebKit import QWebSettings, QWebView, QWebPage, QWebInspector
@@ -34,10 +39,10 @@ def rstconverter(source):
 	"""Converts reStructuredText source to HTML"""
 	from docutils import core
 	try:
-		import nonexistant #TODO fix
+		raise ImportError('not implemented') #TODO fix
 		from docutils_html5_writer import Writer
 	except ImportError:
-		print("no html5 writer available", file=sys.stderr)
+		print('no html5 writer available', file=sys.stderr)
 		from docutils.writers.html4css1 import Writer
 	parts = core.publish_parts(source=source, writer=Writer())
 	return parts['whole']
@@ -55,7 +60,7 @@ class Format(object):
 		return self.extensions
 
 FMTLIST = (
-	Format("Dummy", lambda source: "<pre>{}</pre>".format(source), ""),
+	Format("Dummy", "<pre>{}</pre>".format, ""),
 	Format("Markdown", mdconverter,
 		"md", "mdwn", "mdown", "markdown", "txt", "text", "mdtext"),
 	Format("reStructuredText", rstconverter,
@@ -73,7 +78,7 @@ class Renderer(QThread):
 	def run(self):
 		"""Causes the markdowner to rerender"""
 		self.scrollpos = self.widget.preview.page().mainFrame().scrollPosition()
-		source = str(self.widget.editor.document().text())
+		source = self.widget.editor.document().text()
 		html = self.widget.format.converter(source)
 		self.html = "<html><body>{}</body></html>".format(html)
 
@@ -132,7 +137,7 @@ class Markdowner(KParts.MainWindow):
 			dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 		
 		inspector = QWebInspector()
-		with self.setup_dock(inspector, "Inspector", Qt.BottomDockWidgetArea) as dock:
+		with self.setup_dock(inspector, 'Inspector', Qt.BottomDockWidgetArea) as dock:
 			inspector.setPage(self.preview.page())
 			dock.hide()
 			inspect_action = self.preview.page().action(QWebPage.InspectElement)
@@ -148,8 +153,8 @@ class Markdowner(KParts.MainWindow):
 	@property
 	def format(self):
 		"""Gets the format from the corrent document’s file extension"""
-		path = str(self.editor.document().url().path())
-		ext = path[path.rfind(".")+1:]
+		path = self.editor.document().url().path()
+		ext = path[path.rfind('.')+1:]
 		return FORMATS[ext]
 	
 	def queryClose(self):
@@ -161,7 +166,7 @@ class Markdowner(KParts.MainWindow):
 		
 		if self.editor.document().isModified():
 			#TODO localization
-			ret = KMessageBox.warningYesNoCancel(self, "Save changes to document?")
+			ret = KMessageBox.warningYesNoCancel(self, 'Save changes to document?')
 			if ret == KMessageBox.Yes:
 				return self.editor.document().documentSave()
 			else:
@@ -169,11 +174,11 @@ class Markdowner(KParts.MainWindow):
 		else:
 			return True
 	
-	@pyqtSlot(QUrl)
+	@Slot(QUrl)
 	def intercept_link(self, url):
 		"""Allows to open documents or scrolling to anchors when clicking links"""
 		#reenable scrolling to anchor in document
-		if url.hasFragment() and url.scheme() == "about" and url.path() == "blank":
+		if url.hasFragment() and url.scheme() == 'about' and url.path() == 'blank':
 			self.preview.page().currentFrame().scrollToAnchor(url.fragment())
 		elif url.isRelative() and self.queryExit():
 			#TODO: less hacky, extensions
@@ -182,10 +187,10 @@ class Markdowner(KParts.MainWindow):
 		else:
 			QDesktopServices.openUrl(url)
 	
-	@pyqtSlot(KTextEditor.Document)
+	@Slot(KTextEditor.Document)
 	def refresh_document(self, doc):
 		"""Sets the necessary bits if a new document is loaded"""
-		self.setWindowTitle("{} – {}".format(
+		self.setWindowTitle('{} – {}'.format(
 			doc.documentName(),
 			KCmdLineArgs.aboutData().programName()
 		))
@@ -237,7 +242,7 @@ class Colors(object):
 	def __getitem__(self, role):
 		scheme = KColorScheme(QPalette.Active, KColorScheme.Window)
 		color = scheme.foreground(KColorScheme.__dict__[role]).color()
-		return "rgba({}, {}, {}, {})".format(
+		return 'rgba({}, {}, {}, {})'.format(
 			color.red(), color.green(), color.blue(), color.alpha())
 		#TODO: handle bgcolors
 COLORS = Colors()
@@ -248,28 +253,27 @@ def base64css():
 	suited for HTML src attributes.
 	"""
 	cssbytes = CSS_TEMPLATE.format(colors=COLORS).encode('utf-8')
-	uri = "data:text/css;charset=utf-8;base64,"
+	uri = 'data:text/css;charset=utf-8;base64,'
 	uri += b64encode(cssbytes).decode('utf-8')
 	return QUrl(uri)
 
 def main():
 	"""Creates an application form the cmd line args and starts a editor window"""
 	about_data = KAboutData(
-		"markdowner",
-		"",
-		ki18n(b"Markdowner"),
-		"1.0",
-		ki18n(b"Markdown editor"),
+		'markdowner',
+		'',
+		ki18n(b'Markdowner'),
+		'1.0',
+		ki18n(b'Markdown editor'),
 		KAboutData.License_GPL,
-		ki18n("© 2011 flying sheep".encode('utf-8')),
-		ki18n(b"none"),
-		"http://red-sheep.de",
-		"flying-sheep@web.de"
-	)
+		ki18n('© 2011 flying sheep'.encode('utf-8')),
+		ki18n(b'none'),
+		'http://red-sheep.de',
+		'flying-sheep@web.de')
 	
 	KCmdLineArgs.init(sys.argv, about_data)
 	opts = KCmdLineOptions()
-	opts.add("+[file]", ki18n(b"File to open"))
+	opts.add('+[file]', ki18n(b'File to open'))
 	KCmdLineArgs.addCmdLineOptions(opts)
 	
 	args = KCmdLineArgs.parsedArgs()
@@ -280,5 +284,5 @@ def main():
 	window.show()
 	sys.exit(app.exec_())
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	main()
