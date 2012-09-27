@@ -1,33 +1,41 @@
-#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
 """
 A program to edit Markdown and reStructuredText documents with previews
 """
 
-from __future__ import division, print_function, unicode_literals
+from __future__ import (
+	print_function, unicode_literals,
+	division, absolute_import)
 
 import sys, os, re
 from base64 import b64encode
 from contextlib import contextmanager
 
-import sip
-sip.setapi('QString', 2)
-sip.setapi('QVariant', 2)
-
-from PyKDE4.kdecore     import (
-	KUrl, KAboutData, ki18n,
-	KCmdLineOptions, KCmdLineArgs)
-from PyKDE4.kdeui       import KApplication, KColorScheme, KIcon, KMessageBox
-from PyKDE4.kparts      import KParts
-from PyKDE4.ktexteditor import KTextEditor
-
-from PyQt4.QtCore   import Qt, QUrl, QThread, pyqtSlot as Slot
-from PyQt4.QtGui    import QWidget, QDesktopServices, QDockWidget, QPalette, \
-                           QSizeGrip, QScrollBar
+from PyQt4.QtCore import Qt, QUrl, QThread, pyqtSlot as Slot
+from PyQt4.QtGui import (
+	QWidget, QDesktopServices, QDockWidget,
+	QPalette, QSizeGrip, QScrollBar)
 from PyQt4.QtWebKit import QWebSettings, QWebView, QWebPage, QWebInspector
 QWebSettings.globalSettings().setAttribute(
 	QWebSettings.DeveloperExtrasEnabled, True)
+
+from PyKDE4.kdecore     import KAboutData, KUrl, ki18n
+from PyKDE4.kdeui       import KColorScheme, KIcon, KMessageBox
+from PyKDE4.kparts      import KParts
+from PyKDE4.ktexteditor import KTextEditor
+
+ABOUT = KAboutData(
+	'markdowner',
+	'',
+	ki18n(b'Markdowner'),
+	'1.0',
+	ki18n(b'Markdown editor'),
+	KAboutData.License_GPL,
+	ki18n('© 2011 flying sheep'.encode('utf-8')),
+	ki18n(b'none'),
+	'http://red-sheep.de',
+	'flying-sheep@web.de')
 
 def mdconverter(source):
 	"""Converts Markdown source to HTML"""
@@ -192,7 +200,7 @@ class Markdowner(KParts.MainWindow):
 		"""Sets the necessary bits if a new document is loaded"""
 		self.setWindowTitle('{} – {}'.format(
 			doc.documentName(),
-			KCmdLineArgs.aboutData().programName()
+			ABOUT.programName()
 		))
 		doc.setMode(self.format.name)
 	
@@ -256,33 +264,3 @@ def base64css():
 	uri = 'data:text/css;charset=utf-8;base64,'
 	uri += b64encode(cssbytes).decode('utf-8')
 	return QUrl(uri)
-
-def main():
-	"""Creates an application form the cmd line args and starts a editor window"""
-	about_data = KAboutData(
-		'markdowner',
-		'',
-		ki18n(b'Markdowner'),
-		'1.0',
-		ki18n(b'Markdown editor'),
-		KAboutData.License_GPL,
-		ki18n('© 2011 flying sheep'.encode('utf-8')),
-		ki18n(b'none'),
-		'http://red-sheep.de',
-		'flying-sheep@web.de')
-	
-	KCmdLineArgs.init(sys.argv, about_data)
-	opts = KCmdLineOptions()
-	opts.add('+[file]', ki18n(b'File to open'))
-	KCmdLineArgs.addCmdLineOptions(opts)
-	
-	args = KCmdLineArgs.parsedArgs()
-	file_urls = [args.url(i) for i in range(args.count())] #wurgs
-	
-	app = KApplication()
-	window = Markdowner(file_urls)
-	window.show()
-	sys.exit(app.exec_())
-
-if __name__ == '__main__':
-	main()
