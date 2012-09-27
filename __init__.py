@@ -68,11 +68,11 @@ class Format(object):
 		return self.extensions
 
 FMTLIST = (
-	Format("Dummy", "<pre>{}</pre>".format, ""),
-	Format("Markdown", mdconverter,
-		"md", "mdwn", "mdown", "markdown", "txt", "text", "mdtext"),
-	Format("reStructuredText", rstconverter,
-		"rst", "rest")
+	Format('Dummy', '<pre>{}</pre>'.format, ''),
+	Format('Markdown', mdconverter,
+		'md', 'mdwn', 'mdown', 'markdown', 'txt', 'text', 'mdtext'),
+	Format('reStructuredText', rstconverter,
+		'rst', 'rest')
 )
 FORMATS = {ext: fmt for fmt in FMTLIST for ext in fmt.extensions}
 
@@ -82,20 +82,20 @@ class Renderer(QThread):
 		QThread.__init__(self)
 		self.widget = widget
 		self.scrollpos = None
-		self.html = ""
+		self.html = ''
 	def run(self):
 		"""Causes the markdowner to rerender"""
 		self.scrollpos = self.widget.preview.page().mainFrame().scrollPosition()
 		source = self.widget.editor.document().text()
 		html = self.widget.format.converter(source)
-		self.html = "<html><body>{}</body></html>".format(html)
+		self.html = '<html><body>{}</body></html>'.format(html)
 
 class Markdowner(KParts.MainWindow):
 	"""Main Editor window"""
 	def __init__(self, urls, parent=None):
 		KParts.MainWindow.__init__(self, parent)
 		
-		self.setWindowIcon(KIcon("text-editor"))
+		self.setWindowIcon(KIcon('text-editor'))
 		
 		self.kate = KTextEditor.EditorChooser.editor()
 		self.editor = self.kate.createDocument(self).createView(self)
@@ -119,7 +119,7 @@ class Markdowner(KParts.MainWindow):
 			Replaces the preview HTML with the newly rendered one
 			and restores the scroll position
 			"""
-			url = self.editor.document().url().resolved(QUrl("."))
+			url = self.editor.document().url().resolved(QUrl('.'))
 			self.preview.setHtml(self.renderer.html, url) #baseurl für extenes zeug
 			self.preview.page().mainFrame().setScrollPosition(self.renderer.scrollpos)
 		
@@ -133,7 +133,7 @@ class Markdowner(KParts.MainWindow):
 		self.preview.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
 		self.preview.linkClicked.connect(self.intercept_link)
 		
-		with self.setup_dock(self.preview, "Preview", Qt.RightDockWidgetArea) as dock:
+		with self.setup_dock(self.preview, 'Preview', Qt.RightDockWidgetArea) as dock:
 			page = self.preview.page()
 			palette = page.palette()
 			palette.setBrush(QPalette.Base, Qt.transparent)
@@ -239,11 +239,11 @@ def create_grip(editor):
 	return sizegrip
 
 SCRIPTDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-with open(os.path.join(SCRIPTDIR, "html.css")) as css_file:
+with open(os.path.join(SCRIPTDIR, 'html.css')) as css_file:
 	CSS_TEMPLATE = css_file.read()
 	#convert custom template to python template string:
-	CSS_TEMPLATE = re.sub(r"\{([^\}]*)\}",   r"{{\1}}",   CSS_TEMPLATE)
-	CSS_TEMPLATE = re.sub(r"\$(\w+)\.(\w+)", r"{\1[\2]}", CSS_TEMPLATE)
+	CSS_TEMPLATE = re.sub(r'\{([^\}]*)\}',   r'{{\1}}',   CSS_TEMPLATE)
+	CSS_TEMPLATE = re.sub(r'\$(\w+)\.(\w+)', r'{\1[\2]}', CSS_TEMPLATE)
 
 class Colors(object):
 	"""Singleton to access colors from the current color theme"""
