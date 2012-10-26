@@ -125,7 +125,7 @@ class Markdowner(KParts.MainWindow):
 	def format(self):
 		"""Gets the format from the corrent document’s file extension"""
 		path = self.editor.document().url().path()
-		ext = path[path.rfind('.')+1:]
+		ext = path[path.rfind('.') + 1:]
 		return FORMATS[ext]
 	
 	def queryClose(self):
@@ -201,21 +201,29 @@ def create_grip(editor):
 	sizegrip.resize(w_dummy, w_dummy)
 	return sizegrip
 
-SCRIPTDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+def dot_repl(matchobj):
+	dic, color, alph = matchobj.groups()
+	return '{{{}[{} {}]}}'.format(dic, color, alph or 1)
+
+SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(SCRIPTDIR, 'html.css')) as css_file:
 	CSS_TEMPLATE = css_file.read()
 	#convert custom template to python template string:
 	CSS_TEMPLATE = re.sub(r'\{([^\}]*)\}',   r'{{\1}}',   CSS_TEMPLATE)
-	CSS_TEMPLATE = re.sub(r'\$(\w+)\.(\w+)', r'{\1[\2]}', CSS_TEMPLATE)
+	CSS_TEMPLATE = re.sub(r'\$(\w+)\.(\w+)(\.\d+)?', dot_repl, CSS_TEMPLATE)
 
 class Colors(object):
 	"""Singleton to access colors from the current color theme"""
 	def __getitem__(self, role):
 		scheme = KColorScheme(QPalette.Active, KColorScheme.Window)
-		color = scheme.foreground(KColorScheme.__dict__[role]).color()
+		alph = role.split()[1]
+		role = KColorScheme.__dict__[role.split()[0]]
+		try:
+			color = scheme.foreground(role).color()
+		except TypeError:
+			color = scheme.background(role).color()
 		return 'rgba({}, {}, {}, {})'.format(
-			color.red(), color.green(), color.blue(), color.alpha())
-		#TODO: handle bgcolors
+			color.red(), color.green(), color.blue(), alph or color.alpha())
 COLORS = Colors()
 
 def base64css():

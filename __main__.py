@@ -16,7 +16,7 @@ if __package__ is None:
 	PARDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 	sys.path.insert(0, PARDIR)
 	import markdowner
-	__package__ = b'markdowner'
+	__package__ = str('markdowner')
 
 from PyKDE4.kdecore import ki18n, KCmdLineOptions, KCmdLineArgs
 from PyKDE4.kdeui   import KApplication
