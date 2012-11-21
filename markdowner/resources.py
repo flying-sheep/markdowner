@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+
+"""
+Access to resouce files
+"""
+
+from __future__ import (
+	print_function, unicode_literals,
+	division, absolute_import)
+
 import re
 from base64 import b64encode
 from os.path import * #we just do path stuff here, so we might as well
@@ -18,6 +28,10 @@ else:
 	RES_DIR = '/usr/share/markdowner' #TODO
 
 def dot_repl(matchobj):
+	"""
+	Changes custom template to str.format template
+	usable with "ColorRole opacity" keys.
+	"""
 	dic, color, alph = matchobj.groups()
 	return '{{{}[{} {}]}}'.format(dic, color, alph or 1)
 
@@ -31,8 +45,8 @@ class Colors(object):
 	"""Singleton to access colors from the current color theme"""
 	def __getitem__(self, role):
 		scheme = KColorScheme(QPalette.Active, KColorScheme.Window)
-		alph = role.split()[1]
-		role = KColorScheme.__dict__[role.split()[0]]
+		role, alph = role.split()
+		role = KColorScheme.__dict__[role]
 		try:
 			color = scheme.foreground(role).color()
 		except TypeError:
