@@ -8,8 +8,6 @@ from __future__ import (
 	print_function, unicode_literals,
 	division, absolute_import)
 
-import sys, os, re
-from base64 import b64encode
 from contextlib import contextmanager
 
 from PyQt4.QtCore import Qt, QUrl, QThread, pyqtSlot as Slot
@@ -21,11 +19,12 @@ QWebSettings.globalSettings().setAttribute(
 	QWebSettings.DeveloperExtrasEnabled, True)
 
 from PyKDE4.kdecore     import KAboutData, KUrl, ki18n, i18n
-from PyKDE4.kdeui       import KColorScheme, KIcon, KMessageBox
+from PyKDE4.kdeui       import KIcon, KMessageBox
 from PyKDE4.kparts      import KParts
 from PyKDE4.ktexteditor import KTextEditor
 
 from .formats import FORMATS
+from .resources import base64css
 
 ABOUT = KAboutData(
 	'markdowner',
@@ -200,38 +199,3 @@ def create_grip(editor):
 	sizegrip = QSizeGrip(dummy)
 	sizegrip.resize(w_dummy, w_dummy)
 	return sizegrip
-
-def dot_repl(matchobj):
-	dic, color, alph = matchobj.groups()
-	return '{{{}[{} {}]}}'.format(dic, color, alph or 1)
-
-SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
-with open(os.path.join(SCRIPTDIR, 'html.css')) as css_file:
-	CSS_TEMPLATE = css_file.read()
-	#convert custom template to python template string:
-	CSS_TEMPLATE = re.sub(r'\{([^\}]*)\}',   r'{{\1}}',   CSS_TEMPLATE)
-	CSS_TEMPLATE = re.sub(r'\$(\w+)\.(\w+)(\.\d+)?', dot_repl, CSS_TEMPLATE)
-
-class Colors(object):
-	"""Singleton to access colors from the current color theme"""
-	def __getitem__(self, role):
-		scheme = KColorScheme(QPalette.Active, KColorScheme.Window)
-		alph = role.split()[1]
-		role = KColorScheme.__dict__[role.split()[0]]
-		try:
-			color = scheme.foreground(role).color()
-		except TypeError:
-			color = scheme.background(role).color()
-		return 'rgba({}, {}, {}, {})'.format(
-			color.red(), color.green(), color.blue(), alph or color.alpha())
-COLORS = Colors()
-
-def base64css():
-	"""
-	generates a base64 encoded version of a file
-	suited for HTML src attributes.
-	"""
-	cssbytes = CSS_TEMPLATE.format(colors=COLORS).encode('utf-8')
-	uri = 'data:text/css;charset=utf-8;base64,'
-	uri += b64encode(cssbytes).decode('utf-8')
-	return QUrl(uri)
