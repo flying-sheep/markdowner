@@ -25,7 +25,7 @@ class Format(object):
 	"""
 	def __init__(self, name, converter, extensions):
 		self.name = name
-		self.converter = converter
+		self.convert = converter
 		self.extensions = extensions
 	def __iter__(self):
 		return self.extensions

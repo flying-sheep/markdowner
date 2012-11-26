@@ -3,6 +3,7 @@ A program to edit Markdown and reStructuredText documents with previews
 """
 
 from contextlib import contextmanager
+from textwrap import dedent
 
 from PyQt4.QtCore import Qt, QUrl, QThread, pyqtSlot as Slot
 from PyQt4.QtGui import (
@@ -34,17 +35,35 @@ ABOUT = KAboutData(
 
 class Renderer(QThread):
 	"""Thread which can reconvert the markup document"""
+	
+	html_template = dedent("""\
+		<!doctype html>
+		<html>
+		<body>
+		{}
+		</body>
+		</html>
+		""")
+	
 	def __init__(self, widget):
 		QThread.__init__(self)
 		self.widget = widget
 		self.scrollpos = None
 		self.html = ''
+	
 	def run(self):
 		"""Causes the markdowner to rerender"""
 		self.scrollpos = self.widget.preview.page().mainFrame().scrollPosition()
 		source = self.widget.editor.document().text()
-		html = self.widget.format.converter(source)
-		self.html = '<html><body>{}</body></html>'.format(html)
+		self.html = self.widget.format.convert(source)
+	
+	@property
+	def html(self):
+		return self.html_template.format(self._inner_html)
+	
+	@html.setter
+	def html(self, inner):
+		self._inner_html = inner
 
 class Markdowner(KParts.MainWindow):
 	"""Main Editor window"""
