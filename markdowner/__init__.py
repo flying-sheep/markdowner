@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-
 """
 A program to edit Markdown and reStructuredText documents with previews
 """
-
-from __future__ import (
-	print_function, unicode_literals,
-	division, absolute_import)
 
 from contextlib import contextmanager
 

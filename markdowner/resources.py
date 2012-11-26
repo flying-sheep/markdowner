@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-
 """
 Access to resouce files
 """
-
-from __future__ import (
-	print_function, unicode_literals,
-	division, absolute_import)
 
 import re
 from base64 import b64encode

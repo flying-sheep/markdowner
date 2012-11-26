@@ -1,13 +1,8 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 """
 Creates an application from the cmd line args and starts a editor window
 """
-
-from __future__ import (
-	print_function, unicode_literals,
-	division, absolute_import)
 
 import sys
 
@@ -16,7 +11,7 @@ if __package__ is None:
 	PARDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 	sys.path.insert(0, PARDIR)
 	import markdowner
-	__package__ = str('markdowner')
+	__package__ = 'markdowner'
 
 from PyKDE4.kdecore import ki18n, KCmdLineOptions, KCmdLineArgs
 from PyKDE4.kdeui   import KApplication

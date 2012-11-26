@@ -1,23 +1,12 @@
-# -*- coding: utf-8 -*-
-
 """
 Utilities to render markup formats to HTML
 """
-
-from __future__ import (
-	print_function, unicode_literals,
-	division, absolute_import)
 
 import sys
 
 from markdown import markdown
 from docutils import core
-try:
-	raise ImportError('not implemented') #TODO fix
-	from docutils_html5_writer import Writer as RSTHTMLWriter
-except ImportError:
-	print('no html5 writer available', file=sys.stderr)
-	from docutils.writers.html4css1 import Writer as RSTHTMLWriter
+from docutils.writers.html4css1 import Writer as RSTHTMLWriter
 
 def mdconverter(source):
 	"""Converts Markdown source to HTML"""
