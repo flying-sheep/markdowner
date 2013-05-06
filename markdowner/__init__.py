@@ -4,46 +4,52 @@ A program to edit Markdown and reStructuredText documents with previews
 
 from contextlib import contextmanager
 from textwrap import dedent
+from string import Template
 
 from PyQt4.QtCore import Qt, QUrl, QThread, pyqtSlot as Slot
 from PyQt4.QtGui import (
 	QWidget, QDesktopServices, QDockWidget,
 	QPalette, QSizeGrip, QScrollBar)
 from PyQt4.QtWebKit import QWebSettings, QWebView, QWebPage, QWebInspector
-QWebSettings.globalSettings().setAttribute(
-	QWebSettings.DeveloperExtrasEnabled, True)
 
-from PyKDE4.kdecore     import KAboutData, KUrl, ki18n, i18n
-from PyKDE4.kdeui       import KIcon, KMessageBox
+from PyKDE4.kdecore     import KAboutData, KUrl, ki18n as _ktranslate, i18n as _translate
+from PyKDE4.kdeui       import KIcon, KMessageBox, KToolBar
 from PyKDE4.kparts      import KParts
 from PyKDE4.ktexteditor import KTextEditor
 
 from .formats import FORMATS
 from .resources import base64css
 
+def i18n(s):
+	return _translate(s.encode('utf-8'))
+
+def ki18n(s):
+	return _ktranslate(s.encode('utf-8'))
+
 ABOUT = KAboutData(
 	'markdowner',
 	'',
-	ki18n(b'Markdowner'),
+	ki18n('Markdowner'),
 	'1.0',
-	ki18n(b'Markdown editor'),
+	ki18n('Markdown editor'),
 	KAboutData.License_GPL,
-	ki18n('© 2011 flying sheep'.encode('utf-8')),
-	ki18n(b'none'),
+	ki18n('© 2011 flying sheep'),
+	ki18n('none'),
 	'http://red-sheep.de',
 	'flying-sheep@web.de')
+		
 
 class Renderer(QThread):
 	"""Thread which can reconvert the markup document"""
 	
-	html_template = dedent("""\
+	html_template = Template(dedent("""\
 		<!doctype html>
 		<html>
 		<body>
-		{}
+		$inner
 		</body>
 		</html>
-		""")
+		"""))
 	
 	def __init__(self, widget):
 		QThread.__init__(self)
@@ -59,7 +65,7 @@ class Renderer(QThread):
 	
 	@property
 	def html(self):
-		return self.html_template.format(self._inner_html)
+		return self.html_template.substitute(inner=self._inner_html)
 	
 	@html.setter
 	def html(self, inner):
@@ -69,6 +75,9 @@ class Markdowner(KParts.MainWindow):
 	"""Main Editor window"""
 	def __init__(self, urls, parent=None):
 		KParts.MainWindow.__init__(self, parent)
+		
+		QWebSettings.globalSettings().setAttribute(
+			QWebSettings.DeveloperExtrasEnabled, True)
 		
 		self.setWindowIcon(KIcon('text-editor'))
 		
@@ -103,12 +112,17 @@ class Markdowner(KParts.MainWindow):
 		self.guiFactory().addClient(self.editor)
 		self.setCentralWidget(self.editor)
 		
+		self.toolbar = KToolBar(i18n('Markdowner Toolbar'), self)
+		self.toolbar.setWindowTitle(self.toolbar.objectName())
+		self.preview_button = self.toolbar.addAction(KIcon('document-preview'), i18n('Show Preview'))
+		self.preview_button.setCheckable(True)
+		
 		self.preview = QWebView()
 		self.preview.settings().setUserStyleSheetUrl(base64css())
 		self.preview.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
 		self.preview.linkClicked.connect(self.intercept_link)
 		
-		with self.setup_dock(self.preview, 'Preview', Qt.RightDockWidgetArea) as dock:
+		with self.setup_dock(self.preview, i18n('Preview'), Qt.RightDockWidgetArea) as dock:
 			page = self.preview.page()
 			palette = page.palette()
 			palette.setBrush(QPalette.Base, Qt.transparent)
@@ -118,9 +132,11 @@ class Markdowner(KParts.MainWindow):
 			self.preview.setAttribute(Qt.WA_OpaquePaintEvent, False)
 			
 			dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+			dock.visibilityChanged.connect(self.preview_button.setChecked)
+			self.preview_button.triggered.connect(dock.setVisible)
 		
 		inspector = QWebInspector()
-		with self.setup_dock(inspector, 'Inspector', Qt.BottomDockWidgetArea) as dock:
+		with self.setup_dock(inspector, i18n('Inspector'), Qt.BottomDockWidgetArea) as dock:
 			inspector.setPage(self.preview.page())
 			dock.hide()
 			inspect_action = self.preview.page().action(QWebPage.InspectElement)
@@ -149,7 +165,7 @@ class Markdowner(KParts.MainWindow):
 		
 		if self.editor.document().isModified():
 			ret = KMessageBox.warningYesNoCancel(self,
-				i18n(b'Save changes to document?'))
+				i18n('Save changes to document?'))
 			if ret == KMessageBox.Yes:
 				return self.editor.document().documentSave()
 			else:

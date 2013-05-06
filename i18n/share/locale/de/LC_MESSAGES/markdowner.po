@@ -17,27 +17,43 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lokalize 1.5\n"
 
-#: __init__.py:33
+#: markdowner/__init__.py:33
 msgid "Markdowner"
 msgstr "Markdowner"
 
-#: __init__.py:35
+#: markdowner/__init__.py:35
 msgid "Markdown editor"
 msgstr "Markdown-Editor"
 
-#: __init__.py:37
+#: markdowner/__init__.py:37
 msgid "© 2011 flying sheep"
 msgstr "© 2011 flying sheep"
 
-#: __init__.py:38
+#: markdowner/__init__.py:38
 msgid "none"
 msgstr "keine"
 
-#: __init__.py:140
+#: markdowner/__init__.py:115
+msgid "Markdowner Toolbar"
+msgstr "Markdowner-Werkzeugleiste"
+
+#: markdowner/__init__.py:117
+msgid "Show Preview"
+msgstr "Vorschau zeigen"
+
+#: markdowner/__init__.py:125
+msgid "Preview"
+msgstr "Vorschau"
+
+#: markdowner/__init__.py:139
+msgid "Inspector"
+msgstr "Inspektor"
+
+#: markdowner/__init__.py:140
 msgid "Save changes to document?"
 msgstr "Änderungen speichern?"
 
-#: __main__.py:31
+#: markdowner/__main__.py:31
 msgid "File to open"
 msgstr "Zu öffnende Datei"
 
