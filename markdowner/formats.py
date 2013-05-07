@@ -30,11 +30,11 @@ class Format(object):
 	def __iter__(self):
 		return self.extensions
 
-FMTLIST = (
-	Format('Dummy', '<pre>{}</pre>'.format, ('',)),
+FMTLIST = [
+	Format('Dummy', '<pre>{}</pre>'.format, ['',]),
 	Format('Markdown', mdconverter,
-		('md', 'mdwn', 'mdown', 'markdown', 'txt', 'text', 'mdtext')),
+		['md', 'mdwn', 'mdown', 'markdown', 'txt', 'text', 'mdtext']),
 	Format('reStructuredText', rstconverter,
-		('rst', 'rest'))
-)
+		['rst', 'rest'])
+]
 FORMATS = {ext: fmt for fmt in FMTLIST for ext in fmt.extensions}

@@ -1,20 +1,8 @@
-#!/usr/bin/env python3
-
 """
 Creates an application from the cmd line args and starts a editor window
 """
 
 import sys
-
-if __package__ is None:
-	import os
-	PARDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-	
-	sys.path.insert(0, PARDIR)
-	import markdowner
-	__package__ = 'markdowner'
-	
-	os.environ["KDEDIRS"] = os.path.join(PARDIR, 'i18n')
 
 from PyKDE4.kdecore import KGlobal, KCmdLineOptions, KCmdLineArgs
 from PyKDE4.kdeui   import KApplication
